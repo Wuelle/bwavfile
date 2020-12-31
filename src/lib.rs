@@ -62,6 +62,8 @@ mod fmt;
 mod wavereader;
 mod wavewriter;
 
+mod wave;
+
 pub use errors::Error;
 pub use wavereader::WaveReader;
 pub use wavewriter::{WaveWriter, AudioFrameWriter};
