@@ -20,6 +20,10 @@ pub enum Error {
     /// the required `ds64` metadata element
     MissingRequiredDS64,
 
+    /// A wave file has a `ds64` element but is missing an
+    /// length entry for a chunk
+    MissingDS64Length(FourCC),
+
     /// A data chunk required to complete the operation
     /// is not present in the file
     ChunkMissing { signature : FourCC },
