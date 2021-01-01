@@ -6,7 +6,6 @@
 use crate::ChannelMask;
 use crate::ChannelDescriptor;
 
-use std::collections::HashMap;
 use std::io::{Read, Write, Seek, Cursor};
 use std::io::SeekFrom;
 use std::fs::File;
