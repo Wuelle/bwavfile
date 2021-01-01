@@ -207,6 +207,8 @@ pub struct WaveWriter<W> where W: Write + Seek {
     pub format: WaveFmt
 }
 
+const DS64_RESERVATION_LENGTH : u32 = 96;
+
 impl WaveWriter<File> {
 
     /// Create a new Wave file at `path`.
@@ -232,7 +234,8 @@ impl<W> WaveWriter<W> where W: Write + Seek {
 
         retval.increment_form_length(4)?;
 
-        retval.write_junk(96)?;
+        // write ds64_reservation
+        retval.write_junk(DS64_RESERVATION_LENGTH)?;
 
         let mut chunk = retval.chunk(FMT__SIG)?;
         chunk.write_wave_fmt(&format)?;
@@ -303,11 +306,13 @@ impl<W> WaveWriter<W> where W: Write + Seek {
         Ok( AudioFrameWriter::new(inner) )
     }
 
+    /// Open a wave chunk writer here
     fn chunk(mut self, ident: FourCC) -> Result<WaveChunkWriter<W>,Error> {
         self.inner.seek(SeekFrom::End(0))?;
         WaveChunkWriter::begin(self, ident)
     }
 
+    /// Upgrade this file to RF64
     fn promote_to_rf64(&mut self) -> Result<(), std::io::Error> {
         if !self.is_rf64 {
             self.inner.seek(SeekFrom::Start(0))?;
@@ -323,6 +328,7 @@ impl<W> WaveWriter<W> where W: Write + Seek {
         Ok(())
     }
 
+    /// Add `amount` to the RIFF/RF64 form length
     fn increment_form_length(&mut self, amount: u64) -> Result<(), std::io::Error> {
         self.form_length = self.form_length + amount;
         if self.is_rf64 {
@@ -450,10 +456,8 @@ fn test_write_bext() {
 }
 
 
-// NOTE! This test of RF64 writing passes on my machine but because it takes 
-// nearly 5 mins to run I have omitted it from the source for now...
-
-//#[test]
+// NOTE! This test of RF64 writing takes several minutes to complete.
+#[test]
 fn test_create_rf64() {
     use super::fourcc::ReadFourCC;
     use byteorder::ReadBytesExt;
