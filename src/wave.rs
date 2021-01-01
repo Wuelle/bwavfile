@@ -1,3 +1,8 @@
+//! This is a re-imaginaing of the file interface as a single struct, for
+//! both reading and writing. At this time this isn't really applicable
+//! (`File` objects can't be read-write in main rust) but it's here and I'd like
+//! to eventually replace the reader/writer structs with it.
+
 use crate::ChannelMask;
 use crate::ChannelDescriptor;
 
@@ -10,9 +15,8 @@ use super::errors::Error;
 use super::fmt::WaveFmt;
 use super::bext::Bext;
 use super::chunks::ReadBWaveChunks;
-use super::fourcc::{FourCC, ReadFourCC, RIFF_SIG, RF64_SIG, BW64_SIG, WAVE_SIG, 
-    LIST_SIG,
-    DS64_SIG, FMT__SIG, DATA_SIG, BEXT_SIG, IXML_SIG, AXML_SIG};
+use super::fourcc::{FourCC, ReadFourCC, WriteFourCC, RIFF_SIG, RF64_SIG, BW64_SIG, 
+    WAVE_SIG, LIST_SIG, DS64_SIG, FMT__SIG, DATA_SIG, BEXT_SIG, IXML_SIG, AXML_SIG};
 
 use byteorder::LittleEndian;
 use byteorder::WriteBytesExt;
@@ -231,5 +235,35 @@ impl<T> Wave<T> where T:Read + Seek {
     /// Read axml metadata
     pub fn read_axml(&mut self, buffer: &mut Vec<u8>) -> Result<usize, Error> {
         self.read_chunk(AXML_SIG, 0, buffer) 
+    }
+}
+
+impl<T> Wave<T> where T:Read + Write + Seek {
+
+    pub fn promote_rf64(&mut self) -> Result<(),Error> {
+        if !self.is_rf64()? {
+
+        }
+
+        todo!()
+    }
+
+    /// update the ds64 size for chunk
+    pub fn update_ds64_size(&mut self, ident: FourCC, size : u64) -> Result<(),Error> {
+        self.promote_rf64();
+
+        todo!()
+    }
+
+    pub fn append_chunk(&mut self, ident: FourCC, data: &[u8]) -> Result<usize, Error> {
+        self.inner.write_fourcc(ident)?;
+        if data.len() < (u32::MAX as usize) {
+            self.inner.write_u32::<LittleEndian>(data.len() as u32)?;
+        } else {
+            self.inner.write_u32::<LittleEndian>(0xFFFF_FFFF)?;
+            self.update_ds64_size(ident, data.len() as u64)?;
+        }
+
+        todo!()
     }
 }
