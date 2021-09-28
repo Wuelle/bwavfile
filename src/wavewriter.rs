@@ -306,11 +306,13 @@ impl<W> WaveWriter<W> where W: Write + Seek {
         Ok( AudioFrameWriter::new(inner) )
     }
 
+    /// Open a wave chunk writer here
     fn chunk(mut self, ident: FourCC) -> Result<WaveChunkWriter<W>,Error> {
         self.inner.seek(SeekFrom::End(0))?;
         WaveChunkWriter::begin(self, ident)
     }
 
+    /// Upgrade this file to RF64
     fn promote_to_rf64(&mut self) -> Result<(), std::io::Error> {
         if !self.is_rf64 {
             self.inner.seek(SeekFrom::Start(0))?;
@@ -326,6 +328,7 @@ impl<W> WaveWriter<W> where W: Write + Seek {
         Ok(())
     }
 
+    /// Add `amount` to the RIFF/RF64 form length
     fn increment_form_length(&mut self, amount: u64) -> Result<(), std::io::Error> {
         self.form_length = self.form_length + amount;
         if self.is_rf64 {
@@ -453,10 +456,8 @@ fn test_write_bext() {
 }
 
 
-// NOTE! This test of RF64 writing passes on my machine but because it takes 
-// nearly 5 mins to run I have omitted it from the source for now...
-
-//#[test]
+// NOTE! This test of RF64 writing takes several minutes to complete.
+#[test]
 fn test_create_rf64() {
     use super::fourcc::ReadFourCC;
     use byteorder::ReadBytesExt;

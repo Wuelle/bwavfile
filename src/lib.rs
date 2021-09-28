@@ -72,3 +72,5 @@ pub use fmt::{WaveFmt, WaveFmtExtended, ChannelDescriptor, ChannelMask, ADMAudio
 pub use common_format::CommonFormat;
 pub use audio_frame_reader::AudioFrameReader;
 pub use cue::Cue;
+
+pub use wave::Wave;
